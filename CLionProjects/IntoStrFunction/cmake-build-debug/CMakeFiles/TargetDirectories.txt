@@ -1,0 +1,3 @@
+/Users/cruisemac/CLionProjects/IntoStrFunction/cmake-build-debug/CMakeFiles/PracticeFile.dir
+/Users/cruisemac/CLionProjects/IntoStrFunction/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/cruisemac/CLionProjects/IntoStrFunction/cmake-build-debug/CMakeFiles/rebuild_cache.dir
