@@ -1,0 +1,67 @@
+% File: solve4x4.m
+
+% Coefficient matrix A (4x4)
+A = [ 1  0  3  3;     % Example row 1
+      0 1  -2  -4;     % Example row 2
+      3  -2 9  17;     % Example row 3
+      0  -1  2 9 ];   % Example row 4
+
+% Right-hand side column vector b (4x1)
+b = [-7; 13; -59; -33];    % Example constants
+
+% Check for consistency
+if rank(A) == rank([A b])
+    if rank(A) == size(A,2)
+        disp('✅ Unique solution:')
+        x = A \ b
+    else
+        disp('♾ Infinite solutions (underdetermined system)')
+    end
+else
+    disp('❌ No solution (inconsistent system)')
+end
+%% 
+% File: analyze_2x2_system.m
+
+clc;
+clear;
+
+% Define symbolic variables (edit these as needed)
+syms h k real
+
+% Define the coefficient matrix A and vector b
+A = [ -7,  4, 7;
+    
+      -2,  k ];     % Replace with your own symbolic/number entries
+
+b = [ h;
+     -4 ];          % Replace with your own symbolic/number entries
+
+% Create augmented matrix
+Ab = [A b];
+
+% Calculate ranks
+rank_A  = rank(A);
+rank_Ab = rank(Ab);
+n_vars = size(A,2);
+
+disp('--- Rank Analysis ---')
+fprintf('Rank of A: %d\n', rank_A);
+fprintf('Rank of [A|b]: %d\n', rank_Ab);
+
+% Use row-reduction to analyze solution types
+fprintf('\n--- Solution Type ---\n');
+if rank_A == rank_Ab
+    if rank_A == n_vars
+        disp('✅ Unique solution for almost all values of h and k');
+    else
+        disp('♾ Infinite solutions');
+    end
+else
+    disp('❌ No solution');
+end
+
+% Optional: Show reduced row-echelon form for insight
+disp('--- Row-Reduced Augmented Matrix [A|b] ---')
+rref_Ab = rref(Ab)
+
