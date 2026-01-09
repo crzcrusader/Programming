@@ -1,3 +1,0 @@
-/Users/cruisemac/CLionProjects/PS4/cmake-build-debug/CMakeFiles/PS4.dir
-/Users/cruisemac/CLionProjects/PS4/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/cruisemac/CLionProjects/PS4/cmake-build-debug/CMakeFiles/rebuild_cache.dir
