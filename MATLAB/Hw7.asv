@@ -1,0 +1,17 @@
+% Define the transfer function: G(s)H(s) = 1 / [s(s-4)(s+8)(s+10)]
+zeros = [];
+poles = [0, 4, -8, -10];
+gain = 1;
+
+sys = zpk(zeros, poles, gain);
+
+% Generate the Nyquist Plot
+figure;
+nyquist(sys);
+grid on;
+
+% Labeling for clarity
+title('Nyquist Plot: G(s)H(s) = 1 / [s(s-4)(s+8)(s+10)]');
+xlabel('Real Axis');
+ylabel('Imaginary Axis');
+%% 
