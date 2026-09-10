@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FE Exam Prep Portal</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #0f172a;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #334155;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.75rem;
+        }
+
+        header p {
+            margin: 0.25rem 0 0 0;
+            opacity: 0.85;
+            font-size: 0.95rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.25rem;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-light);
+            border-bottom-color: var(--primary-light);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--secondary);
+            font-size: 1.3rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 0;
+            background: #f1f5f9;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .option-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .option-btn.selected {
+            background: #dbeafe;
+            border-color: var(--primary-light);
+            font-weight: 600;
+        }
+
+        .option-btn.correct {
+            background: #dcfce7;
+            border-color: var(--success);
+            color: #14532d;
+        }
+
+        .option-btn.wrong {
+            background: #fee2e2;
+            border-color: var(--danger);
+            color: #7f1d1d;
+        }
+
+        .hint-box, .explanation-box {
+            display: none;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .hint-box {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #78350f;
+        }
+
+        .explanation-box {
+            background-color: #f0f9ff;
+            border: 1px solid #0284c7;
+            color: #0c4a6e;
+        }
+
+        .action-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .secondary-btn {
+            background: #64748b;
+        }
+
+        .secondary-btn:hover {
+            background: #475569;
+        }
+
+        ul.reference-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul.reference-list li {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tag {
+            background: #e2e8f0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>FE Exam Preparation Portal</h1>
+        <p>Master the NCEES Reference Handbook with interactive practice</p>
+    </header>
+
+    <div class="container">
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('quiz')">Practice Quiz</button>
+            <button class="tab-btn" onclick="switchTab('handbook')">Handbook Key Formulas</button>
+            <button class="tab-btn" onclick="switchTab('tips')">Exam Strategy</button>
+        </div>
+
+        <!-- TAB 1: QUIZ -->
+        <div id="quiz" class="tab-content active">
+            <div id="quiz-container"></div>
+        </div>
+
+        <!-- TAB 2: HANDBOOK GUIDE -->
+        <div id="handbook" class="tab-content">
+            <div class="card">
+                <h2>NCEES Handbook Fast-Search Index</h2>
+                <p>Use standard terminology to search these sections quickly in your PDF viewer during the exam:</p>
+                <ul class="reference-list">
+                    <li>
+                        <span><strong>Engineering Economics:</strong> Capitalized costs, Cash Flow, Present Worth</span>
+                        <span class="tag">Sec 1.5</span>
+                    </li>
+                    <li>
+                        <span><strong>Statics:</strong> 2D/3D Equilibrium, Trusses (Method of Joints/Sections), Friction</span>
+                        <span class="tag">Sec 2.1</span>
+                    </li>
+                    <li>
+                        <span><strong>Mechanics of Materials:</strong> Axial Stress ($\sigma=P/A$), Torsion ($\tau=Tr/J$), Flexure ($\sigma=My/I$)</span>
+                        <span class="tag">Sec 2.4</span>
+                    </li>
+                    <li>
+                        <span><strong>Fluid Mechanics:</strong> Bernoulli Equation, Continuity Equation, Reynolds Number</span>
+                        <span class="tag">Sec 3.2</span>
+                    </li>
+                    <li>
+                        <span><strong>Thermodynamics:</strong> First Law ($\Delta U = Q - W$), Ideal Gas Law ($PV=mRT$)</span>
+                        <span class="tag">Sec 4.1</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- TAB 3: STRATEGY -->
+        <div id="tips" class="tab-content">
+            <div class="card">
+                <h2>FE Exam Essentials</h2>
+                <ol>
+                    <li><strong>Search Terms Matter:</strong> Don't scroll through the PDF. Practice searching keywords like "Euler," "Bending," "Bernoulli," or "Present Worth."</li>
+                    <li><strong>Units Check:</strong> Double-check unit conversions (e.g., kips to lbs, inches to feet, kW to W). Over 30% of wrong answers are unit-mismatch traps.</li>
+                    <li><strong>Pacing Strategy:</strong> You have roughly 3 minutes per question (110 questions in 5 hours and 20 minutes). Flag time-consuming questions and move on.</li>
+                    <li><strong>Guessing Penalty:</strong> There is <strong>no penalty</strong> for incorrect answers. Never leave a question blank on test day.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                id: 1,
+                topic: "Electrical Engineering / Fundamentals",
+                question: "A power converter delivers 100 W to a load while generating 25 W in internal thermal loss. What is the efficiency of the converter?",
+                options: ["75%", "80%", "83.3%", "125%"],
+                correct: 1,
+                hint: "Efficiency = (Output Power / Input Power) * 100%. Note that Input Power = Output Power + Losses.",
+                explanation: "Input Power (P_in) = P_out + P_loss = 100 W + 25 W = 125 W.\nEfficiency (η) = (P_out / P_in) * 100% = (100 W / 125 W) * 100% = 80%."
+            },
+            {
+                id: 2,
+                topic: "Engineering Economics",
+                question: "An engineer requires $10,000 five years from today. If the annual interest rate is 6% compounded annually, what is the required present single payment?",
+                options: ["$7,473", "$7,835", "$8,500", "$9,434"],
+                correct: 0,
+                hint: "Search your Handbook for Single Payment Present Amount: P = F / (1 + i)^n or P = F(P/F, i, n).",
+                explanation: "P = F * (1 + i)^(-n) = $10,000 * (1 + 0.06)^(-5) = $10,000 * 0.74726 = $7,472.60 ≈ $7,473."
+            },
+            {
+                id: 3,
+                topic: "Mechanics of Materials",
+                question: "A circular solid steel shaft with a radius of 0.02 m is subjected to a torque of 500 N·m. What is the maximum shear stress in the shaft?",
+                options: ["19.9 MPa", "39.8 MPa", "79.6 MPa", "159.2 MPa"],
+                correct: 1,
+                hint: "Handbook Torsion formula: τ_max = T*r / J, where J = (π/2) * r^4 for a solid circular cross-section.",
+                explanation: "1. Polar Moment of Inertia (J) = (π/2)*(0.02)^4 = 2.513 × 10^-7 m^4.\n2. τ_max = (500 * 0.02) / (2.513 × 10^-7) = 39,788,735 Pa ≈ 39.8 MPa."
+            },
+            {
+                id: 4,
+                topic: "Fluid Mechanics",
+                question: "Water (density = 1000 kg/m³) flows through a pipe that narrows from an area of 0.1 m² to 0.05 m². If the velocity in the wider section is 2 m/s, what is the velocity in the narrow section?",
+                options: ["1.0 m/s", "2.0 m/s", "4.0 m/s", "8.0 m/s"],
+                correct: 2,
+                hint: "Use the Continuity Equation for incompressible fluid flow: A1 * V1 = A2 * V2.",
+                explanation: "A1 * V1 = A2 * V2  ==>  (0.1 m²)(2 m/s) = (0.05 m²)(V2)  ==>  V2 = 0.2 / 0.05 = 4.0 m/s."
+            },
+            {
+                id: 5,
+                topic: "Mathematics",
+                question: "What is the derivative of f(x) = x³ · e^(2x) with respect to x?",
+                options: [
+                    "3x² · e^(2x)",
+                    "2x³ · e^(2x)",
+                    "x² · e^(2x) (3 + 2x)",
+                    "x² · e^(2x) (3 + x)"
+                ],
+                correct: 2,
+                hint: "Use the Product Rule: d/dx [u·v] = u'v + uv'. Search handbook for Calculus Derivatives.",
+                explanation: "u = x³ => u' = 3x²\nv = e^(2x) => v' = 2e^(2x)\nf'(x) = (3x²)(e^(2x)) + (x³)(2e^(2x)) = x²·e^(2x)(3 + 2x)."
+            }
+        ];
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+
+            questions.forEach((q, idx) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.id = `q-card-${idx}`;
+
+                card.innerHTML = `
+                    <span class="tag">${q.topic}</span>
+                    <h3 style="margin-top:0.5rem;">Question ${idx + 1}</h3>
+                    <p>${q.question}</p>
+                    <div id="options-${idx}">
+                        ${q.options.map((opt, i) => `
+                            <button class="option-btn" onclick="selectOption(${idx}, ${i})">${String.fromCharCode(65 + i)}. ${opt}</button>
+                        `).join('')}
+                    </div>
+                    <button class="action-btn secondary-btn" onclick="toggleHint(${idx})">Toggle Handbook Hint</button>
+                    <button class="action-btn" onclick="checkAnswer(${idx})">Submit Answer</button>
+                    
+                    <div id="hint-${idx}" class="hint-box"><strong>Handbook Hint:</strong> ${q.hint}</div>
+                    <div id="explanation-${idx}" class="explanation-box"></div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        let selectedAnswers = {};
+
+        function selectOption(qIdx, optIdx) {
+            selectedAnswers[qIdx] = optIdx;
+            const buttons = document.querySelectorAll(`#options-${qIdx} .option-btn`);
+            buttons.forEach((btn, i) => {
+                btn.classList.toggle('selected', i === optIdx);
+            });
+        }
+
+        function toggleHint(qIdx) {
+            const hintBox = document.getElementById(`hint-${qIdx}`);
+            hintBox.style.display = hintBox.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function checkAnswer(qIdx) {
+            const selected = selectedAnswers[qIdx];
+            if (selected === undefined) {
+                alert("Please select an answer choice first.");
+                return;
+            }
+
+            const q = questions[qIdx];
+            const buttons = document.querySelectorAll(`#options-${qIdx} .option-btn`);
+            const expBox = document.getElementById(`explanation-${qIdx}`);
+
+            buttons.forEach((btn, i) => {
+                btn.disabled = true;
+                if (i === q.correct) {
+                    btn.className = 'option-btn correct';
+                } else if (i === selected) {
+                    btn.className = 'option-btn wrong';
+                }
+            });
+
+            expBox.style.display = 'block';
+            expBox.innerHTML = `<strong>${selected === q.correct ? 'Correct!' : 'Incorrect.'}</strong><br>${q.explanation.replace(/\n/g, '<br>')}`;
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Initialize quiz on load
+        renderQuiz();
+    </script>
+</body>
+</html>
