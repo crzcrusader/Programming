@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#09090b" />
+  <title>Goal Atlas — Mind Map</title>
+  <meta name="description" content="A private, browser-based visual goal and dependency map." />
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #09090b; --panel: rgba(18,18,22,.94); --panel2: #18181b;
+      --line: #29292f; --line2: #3f3f46; --text: #f4f4f5; --muted: #a1a1aa;
+      --accent: #8b5cf6; --accent2: #6d28d9; --danger: #fb7185;
+      --career:#38bdf8; --school:#a78bfa; --business:#34d399; --financial:#fbbf24; --personal:#fb7185;
+      --shadow: 0 22px 55px rgba(0,0,0,.42);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; overflow: hidden; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    .app { height: 100%; display: grid; grid-template-columns: 290px 1fr; }
+    aside { position: relative; z-index: 20; min-width: 0; padding: 18px; border-right: 1px solid var(--line); background: linear-gradient(180deg, rgba(24,24,27,.97), rgba(12,12,15,.98)); overflow-y: auto; }
+    .brand { display:flex; align-items:center; gap:11px; margin-bottom:20px; }
+    .mark { width:36px; height:36px; display:grid; place-items:center; border-radius:11px; font-weight:800; background: linear-gradient(135deg, #7c3aed, #2563eb); box-shadow:0 10px 25px rgba(124,58,237,.25); }
+    .brand h1 { font-size:17px; line-height:1.1; margin:0; letter-spacing:-.02em; }
+    .brand small { display:block; color:var(--muted); font-size:12px; margin-top:4px; font-weight:500; }
+    .section { padding:16px 0; border-top:1px solid var(--line); }
+    .section-title { margin:0 0 10px; font-size:12px; color:var(--muted); font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+    .btn { width:100%; min-height:42px; border:1px solid var(--line2); border-radius:10px; background:#202024; padding:9px 12px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; transition:.18s ease; font-weight:650; font-size:14px; }
+    .btn:hover { transform:translateY(-1px); background:#29292e; border-color:#52525b; }
+    .btn:active { transform:translateY(0); }
+    .btn.primary { background:linear-gradient(135deg, #7c3aed, #5b21b6); border-color:#8b5cf6; }
+    .btn.primary:hover { background:linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .btn.active { background:#172554; border-color:#3b82f6; color:#bfdbfe; box-shadow:0 0 0 3px rgba(59,130,246,.12); }
+    .btn.danger { color:#fecdd3; }
+    .btn-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .field { margin: 11px 0; }
+    label { display:block; margin:0 0 6px; color:#d4d4d8; font-size:13px; font-weight:600; }
+    input, select { width:100%; min-height:42px; padding:9px 11px; color:var(--text); background:#101014; border:1px solid var(--line2); border-radius:9px; outline:none; }
+    input:focus, select:focus { border-color:#8b5cf6; box-shadow:0 0 0 3px rgba(139,92,246,.14); }
+    .hint { color:var(--muted); font-size:12px; line-height:1.5; margin:10px 0 0; }
+    .stats { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+    .stat { padding:11px; border:1px solid var(--line); border-radius:10px; background:rgba(255,255,255,.025); }
+    .stat strong { font-size:19px; display:block; }
+    .stat span { color:var(--muted); font-size:11px; }
+    main { position:relative; min-width:0; overflow:hidden; background:radial-gradient(circle at 52% 44%, #151523 0, #0c0c10 42%, #09090b 75%); }
+    #cy { position:absolute; inset:0; }
+    .topbar { position:absolute; z-index:10; top:14px; left:14px; right:14px; display:flex; justify-content:space-between; align-items:center; pointer-events:none; }
+    .pill { pointer-events:auto; min-height:40px; display:flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid rgba(63,63,70,.9); border-radius:12px; background:rgba(18,18,22,.82); backdrop-filter:blur(12px); box-shadow:0 10px 30px rgba(0,0,0,.2); color:#d4d4d8; font-size:13px; }
+    .dot { width:8px; height:8px; border-radius:50%; background:#34d399; box-shadow:0 0 0 4px rgba(52,211,153,.1); }
+    .icon-btn { display:none; width:40px; height:40px; border:1px solid var(--line2); border-radius:10px; background:var(--panel); cursor:pointer; pointer-events:auto; }
+    .empty { position:absolute; z-index:4; left:50%; top:50%; transform:translate(-50%,-50%); width:min(430px, calc(100% - 42px)); padding:28px; text-align:center; border:1px dashed #3f3f46; border-radius:18px; background:rgba(18,18,22,.66); backdrop-filter:blur(10px); pointer-events:none; }
+    .empty h2 { font-size:20px; margin:0 0 7px; }
+    .empty p { color:var(--muted); line-height:1.55; margin:0; }
+    .legend { position:absolute; z-index:5; left:14px; bottom:14px; max-width:calc(100% - 28px); display:flex; flex-wrap:wrap; gap:8px; pointer-events:none; }
+    .legend span { padding:6px 9px; border:1px solid var(--line); border-radius:999px; background:rgba(18,18,22,.78); backdrop-filter:blur(8px); color:#d4d4d8; font-size:11px; }
+    .legend i { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:6px; }
+    dialog { width:min(460px, calc(100% - 28px)); border:1px solid var(--line2); border-radius:16px; background:#151519; color:var(--text); padding:0; box-shadow:var(--shadow); }
+    dialog::backdrop { background:rgba(0,0,0,.68); backdrop-filter:blur(4px); }
+    .modal-head { padding:20px 22px 14px; border-bottom:1px solid var(--line); }
+    .modal-head h2 { font-size:19px; margin:0 0 4px; }
+    .modal-head p { color:var(--muted); font-size:13px; margin:0; }
+    .modal-body { padding:15px 22px 22px; }
+    .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
+    .modal-actions .btn { width:auto; min-width:88px; }
+    .toast { position:absolute; z-index:50; right:16px; bottom:16px; max-width:min(360px, calc(100% - 32px)); padding:12px 15px; border:1px solid var(--line2); border-radius:11px; background:#202024; box-shadow:var(--shadow); font-size:13px; opacity:0; transform:translateY(12px); pointer-events:none; transition:.2s ease; }
+    .toast.show { opacity:1; transform:translateY(0); }
+    .scrim { display:none; }
+    @media (max-width: 760px) {
+      .app { grid-template-columns:1fr; }
+      aside { position:absolute; inset:0 auto 0 0; width:min(310px, 88vw); transform:translateX(-102%); transition:.22s ease; box-shadow:var(--shadow); }
+      aside.open { transform:translateX(0); }
+      .scrim { display:block; position:absolute; inset:0; z-index:15; background:rgba(0,0,0,.5); opacity:0; pointer-events:none; transition:.22s; }
+      .scrim.open { opacity:1; pointer-events:auto; }
+      .icon-btn { display:grid; place-items:center; }
+      .topbar { top:max(10px, env(safe-area-inset-top)); }
+      .pill span.long { display:none; }
+      .legend { bottom:max(10px, env(safe-area-inset-bottom)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside id="drawer" aria-label="Goal map controls">
+      <div class="brand"><div class="mark">G</div><div><h1>Goal Atlas</h1><small>Dependency mind map</small></div></div>
+      <button class="btn primary" id="addBtn">＋ Add goal</button>
+
+      <section class="section">
+        <h2 class="section-title">Build connections</h2>
+        <button class="btn" id="linkBtn">↗ Link two goals</button>
+        <p class="hint" id="linkHelp">Turn on link mode, then select the prerequisite followed by the dependent goal.</p>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">Filter view</h2>
+        <div class="field"><label for="categoryFilter">Category</label><select id="categoryFilter"><option value="all">All categories</option><option>Career</option><option>School</option><option>Business</option><option>Financial</option><option>Personal</option></select></div>
+        <div class="field"><label for="priorityFilter">Priority</label><select id="priorityFilter"><option value="all">All priorities</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+        <button class="btn" id="fitBtn">◎ Fit visible goals</button>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">Map data</h2>
+        <div class="btn-row"><button class="btn" id="exportBtn">⇩ Export</button><button class="btn" id="importBtn">⇧ Import</button></div>
+        <input id="fileInput" type="file" accept="application/json,.json" hidden />
+        <button class="btn danger" id="clearBtn" style="margin-top:8px">Clear map</button>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">Map status</h2>
+        <div class="stats"><div class="stat"><strong id="nodeCount">0</strong><span>Goals</span></div><div class="stat"><strong id="edgeCount">0</strong><span>Dependencies</span></div></div>
+        <p class="hint">Double-click empty space to add. Double-click a goal to edit. Select an item and press Delete to remove it.</p>
+      </section>
+    </aside>
+
+    <main>
+      <div class="scrim" id="scrim"></div>
+      <div id="cy" aria-label="Interactive goal mind map"></div>
+      <div class="topbar"><button class="icon-btn" id="menuBtn" aria-label="Open controls">☰</button><div class="pill"><i class="dot"></i><span id="statusText">Saved locally</span><span class="long">• Drag, zoom, and pan</span></div></div>
+      <div class="empty" id="emptyState"><h2>Map your next move</h2><p>Double-click anywhere or use <strong>Add goal</strong>. Then connect goals to show what unlocks what.</p></div>
+      <div class="legend"><span><i style="background:var(--career)"></i>Career</span><span><i style="background:var(--school)"></i>School</span><span><i style="background:var(--business)"></i>Business</span><span><i style="background:var(--financial)"></i>Financial</span><span><i style="background:var(--personal)"></i>Personal</span></div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </main>
+  </div>
+
+  <dialog id="goalDialog">
+    <form id="goalForm" method="dialog">
+      <div class="modal-head"><h2 id="dialogTitle">Add a goal</h2><p>Define the outcome and how prominently it should appear.</p></div>
+      <div class="modal-body">
+        <input type="hidden" id="goalId" />
+        <div class="field"><label for="goalTitle">Title</label><input id="goalTitle" maxlength="80" required autocomplete="off" placeholder="e.g. Graduate from NC State" /></div>
+        <div class="field"><label for="goalCategory">Category</label><select id="goalCategory"><option>Career</option><option>School</option><option>Business</option><option>Financial</option><option>Personal</option></select></div>
+        <div class="field"><label for="goalPriority">Priority</label><select id="goalPriority"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+        <div class="modal-actions"><button class="btn" value="cancel" type="button" id="cancelGoal">Cancel</button><button class="btn primary" value="default" type="submit">Save goal</button></div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="confirmDialog">
+    <div class="modal-head"><h2>Clear the entire map?</h2><p>This removes all goals and dependencies from this browser.</p></div>
+    <div class="modal-body"><div class="modal-actions"><button class="btn" id="cancelClear">Cancel</button><button class="btn danger" id="confirmClear">Clear map</button></div></div>
+  </dialog>
+
+  <script>
+  (() => {
+    'use strict';
+    const STORAGE_KEY = 'goal-atlas-v1';
+    const VALID_CATEGORIES = ['Career','School','Business','Financial','Personal'];
+    const VALID_PRIORITIES = ['High','Medium','Low'];
+    const colors = { Career:'#38bdf8', School:'#a78bfa', Business:'#34d399', Financial:'#fbbf24', Personal:'#fb7185' };
+    const $ = s => document.querySelector(s);
+    const goalDialog = $('#goalDialog'), goalForm = $('#goalForm');
+    let pendingPosition = null, linkMode = false, linkSource = null, saveTimer, toastTimer;
+
+    function readState() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        return parsed && Array.isArray(parsed.elements) ? parsed : { elements: [] };
+      } catch { return { elements: [] }; }
+    }
+
+    const cy = cytoscape({
+      container: $('#cy'), elements: readState().elements,
+      minZoom:.25, maxZoom:2.8, wheelSensitivity:.18, boxSelectionEnabled:true,
+      style: [
+        { selector:'node', style:{
+          'background-color':'data(color)', 'label':'data(label)', 'color':'#fafafa',
+          'font-size':'14px', 'font-weight':650, 'text-wrap':'wrap', 'text-max-width':'145px',
+          'text-valign':'center', 'text-halign':'center', 'width':'mapData(weight, 1, 3, 72, 102)',
+          'height':'mapData(weight, 1, 3, 72, 102)', 'border-width':2, 'border-color':'data(borderColor)',
+          'background-opacity':.2, 'text-outline-width':2, 'text-outline-color':'#09090b',
+          'shadow-blur':20, 'shadow-color':'data(color)', 'shadow-opacity':.2, 'shadow-offset-x':0, 'shadow-offset-y':6,
+          'transition-property':'border-width, opacity, background-opacity', 'transition-duration':'160ms'
+        }},
+        { selector:'node:selected', style:{ 'border-width':4, 'background-opacity':.36, 'overlay-color':'data(color)', 'overlay-opacity':.08, 'overlay-padding':9 }},
+        { selector:'node.link-source', style:{ 'border-width':5, 'border-color':'#ffffff', 'background-opacity':.45 }},
+        { selector:'edge', style:{ 'width':2, 'line-color':'#52525b', 'target-arrow-color':'#71717a', 'target-arrow-shape':'triangle', 'curve-style':'bezier', 'arrow-scale':.9, 'opacity':.8 }},
+        { selector:'edge:selected', style:{ 'width':4, 'line-color':'#8b5cf6', 'target-arrow-color':'#a78bfa' }},
+        { selector:'.filtered', style:{ 'display':'none' }}
+      ]
+    });
+
+    function categoryColor(category){ return colors[category] || '#a1a1aa'; }
+    function priorityWeight(priority){ return priority === 'High' ? 3 : priority === 'Medium' ? 2 : 1; }
+    function makeNodeData(id, title, category, priority){
+      const color = categoryColor(category);
+      return { id, label:title, title, category, priority, color, borderColor:color, weight:priorityWeight(priority) };
+    }
+    function uid(prefix){ return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,7); }
+    function escapeFilename(){ return new Date().toISOString().slice(0,10); }
+    function toast(message){ const el=$('#toast'); el.textContent=message; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2600); }
+    function status(message='Saved locally'){ $('#statusText').textContent=message; }
+    function scheduleSave(){ status('Saving…'); clearTimeout(saveTimer); saveTimer=setTimeout(save,180); }
+    function save(){
+      const elements = cy.elements().map(el => el.isNode() ? { group:'nodes', data:{...el.data()}, position:{...el.position()} } : { group:'edges', data:{...el.data()} });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ version:1, savedAt:new Date().toISOString(), elements }));
+      status(); updateStats();
+    }
+    function updateStats(){ $('#nodeCount').textContent=cy.nodes().length; $('#edgeCount').textContent=cy.edges().length; $('#emptyState').hidden=cy.nodes().length>0; }
+    function applyFilters(){
+      const cat=$('#categoryFilter').value, pri=$('#priorityFilter').value;
+      cy.batch(()=>{
+        cy.elements().removeClass('filtered');
+        cy.nodes().forEach(n => { if ((cat!=='all'&&n.data('category')!==cat)||(pri!=='all'&&n.data('priority')!==pri)) n.addClass('filtered'); });
+        cy.edges().forEach(e => { if(e.source().hasClass('filtered')||e.target().hasClass('filtered')) e.addClass('filtered'); });
+      });
+      updateStats();
+    }
+    function openGoal(node=null, position=null){
+      pendingPosition=position;
+      $('#goalId').value=node ? node.id() : '';
+      $('#dialogTitle').textContent=node ? 'Edit goal' : 'Add a goal';
+      $('#goalTitle').value=node ? node.data('title') : '';
+      $('#goalCategory').value=node ? node.data('category') : 'Career';
+      $('#goalPriority').value=node ? node.data('priority') : 'Medium';
+      goalDialog.showModal(); setTimeout(()=>$('#goalTitle').focus(),0);
+    }
+    function setLinkMode(on){
+      linkMode=on; if(!on && linkSource){ linkSource.removeClass('link-source'); linkSource=null; }
+      $('#linkBtn').classList.toggle('active',on);
+      $('#linkBtn').textContent=on ? '× Cancel link mode' : '↗ Link two goals';
+      $('#linkHelp').textContent=on ? (linkSource ? 'Now select the goal this prerequisite unlocks.' : 'Select the prerequisite goal first.') : 'Turn on link mode, then select the prerequisite followed by the dependent goal.';
+      status(on ? 'Link mode active' : 'Saved locally');
+    }
+    function createDependency(source,target){
+      if(source.id()===target.id()){ toast('A goal cannot depend on itself.'); return; }
+      const exists=cy.edges().some(e=>e.source().id()===source.id()&&e.target().id()===target.id());
+      if(exists){ toast('That dependency already exists.'); return; }
+      cy.add({group:'edges',data:{id:uid('edge'),source:source.id(),target:target.id()}}); scheduleSave(); toast('Dependency created.');
+    }
+    function initialLayout(){ if(cy.nodes().length && cy.nodes().every(n=>n.position('x')===0&&n.position('y')===0)) cy.layout({name:'cose',animate:false,padding:60}).run(); }
+
+    goalForm.addEventListener('submit', e => {
+      e.preventDefault(); const title=$('#goalTitle').value.trim(); if(!title){ $('#goalTitle').focus(); return; }
+      const category=$('#goalCategory').value, priority=$('#goalPriority').value, id=$('#goalId').value;
+      if(id){ const node=cy.getElementById(id); node.data(makeNodeData(id,title,category,priority)); toast('Goal updated.'); }
+      else { const pos=pendingPosition || cy.renderer().projectIntoViewport(cy.width()/2,cy.height()/2); cy.add({group:'nodes',data:makeNodeData(uid('goal'),title,category,priority),position:pos}); toast('Goal added.'); }
+      goalDialog.close(); applyFilters(); scheduleSave();
+    });
+    $('#cancelGoal').onclick=()=>goalDialog.close();
+    $('#addBtn').onclick=()=>openGoal(null,{x:cy.extent().x1+cy.extent().w/2,y:cy.extent().y1+cy.extent().h/2});
+    $('#linkBtn').onclick=()=>setLinkMode(!linkMode);
+    $('#fitBtn').onclick=()=>cy.animate({fit:{eles:cy.elements(':visible'),padding:55},duration:350});
+    $('#categoryFilter').onchange=applyFilters; $('#priorityFilter').onchange=applyFilters;
+    $('#menuBtn').onclick=()=>{ $('#drawer').classList.add('open'); $('#scrim').classList.add('open'); };
+    $('#scrim').onclick=()=>{ $('#drawer').classList.remove('open'); $('#scrim').classList.remove('open'); };
+
+    let lastTap={time:0,target:null,pos:null};
+    cy.on('tap', e => {
+      const now=Date.now(), target=e.target, isSame=lastTap.target===target;
+      if(linkMode && target.isNode && target.isNode()){
+        if(!linkSource){ linkSource=target; target.addClass('link-source'); $('#linkHelp').textContent='Now select the goal this prerequisite unlocks.'; }
+        else { createDependency(linkSource,target); setLinkMode(false); }
+        lastTap={time:0,target:null,pos:null}; return;
+      }
+      if(isSame && now-lastTap.time<350){
+        if(target===cy) openGoal(null,e.position); else if(target.isNode()) openGoal(target);
+        lastTap={time:0,target:null,pos:null};
+      } else lastTap={time:now,target,pos:e.position};
+    });
+    cy.on('dragfree','node',scheduleSave); cy.on('add remove data',updateStats);
+    document.addEventListener('keydown', e => {
+      if((e.key==='Delete'||e.key==='Backspace') && !goalDialog.open && !['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)){
+        const selected=cy.$(':selected'); if(selected.length){ selected.remove(); scheduleSave(); toast('Selection removed.'); }
+      }
+      if(e.key==='Escape' && linkMode) setLinkMode(false);
+    });
+
+    $('#exportBtn').onclick=()=>{
+      save(); const data=localStorage.getItem(STORAGE_KEY); const blob=new Blob([data],{type:'application/json'}); const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download=`goal-atlas-${escapeFilename()}.json`; a.click(); setTimeout(()=>URL.revokeObjectURL(url),0); toast('Map exported.');
+    };
+    $('#importBtn').onclick=()=>$('#fileInput').click();
+    $('#fileInput').onchange=async e=>{
+      const file=e.target.files[0]; if(!file) return;
+      try {
+        const parsed=JSON.parse(await file.text()); if(!parsed||!Array.isArray(parsed.elements)) throw new Error('Missing elements array');
+        const nodeIds=new Set(); const clean=[];
+        for(const el of parsed.elements){
+          if(el.group==='nodes'&&el.data&&typeof el.data.id==='string'&&typeof el.data.title==='string'){
+            const cat=VALID_CATEGORIES.includes(el.data.category)?el.data.category:'Personal'; const pri=VALID_PRIORITIES.includes(el.data.priority)?el.data.priority:'Medium';
+            nodeIds.add(el.data.id); clean.push({group:'nodes',data:makeNodeData(el.data.id,el.data.title.slice(0,80),cat,pri),position:el.position&&Number.isFinite(el.position.x)&&Number.isFinite(el.position.y)?el.position:undefined});
+          }
+        }
+        for(const el of parsed.elements){ if(el.group==='edges'&&el.data&&nodeIds.has(el.data.source)&&nodeIds.has(el.data.target)) clean.push({group:'edges',data:{id:typeof el.data.id==='string'?el.data.id:uid('edge'),source:el.data.source,target:el.data.target}}); }
+        cy.elements().remove(); cy.add(clean); initialLayout(); applyFilters(); save(); cy.fit(undefined,55); toast(`Imported ${nodeIds.size} goals.`);
+      } catch(err){ toast('Import failed: choose a valid Goal Atlas JSON file.'); }
+      e.target.value='';
+    };
+    $('#clearBtn').onclick=()=>$('#confirmDialog').showModal(); $('#cancelClear').onclick=()=>$('#confirmDialog').close();
+    $('#confirmClear').onclick=()=>{ cy.elements().remove(); localStorage.removeItem(STORAGE_KEY); $('#confirmDialog').close(); setLinkMode(false); updateStats(); toast('Map cleared.'); };
+    window.addEventListener('beforeunload',save);
+    initialLayout(); applyFilters(); updateStats();
+  })();
+  </script>
+</body>
+</html>
